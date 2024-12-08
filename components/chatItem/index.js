@@ -32,7 +32,6 @@ const ChatItem = ({ chat, currentUser, onPress }) => {
     <View style={styles.chatItemContainer}>
       <Image source={UserDefaultImage} style={styles.userPairImage} />
       <View>
-        <Text style={styles.userPairPhone}>{userPair.phone}</Text>
         <Text style={styles.chatLastMessage}>
           {chat.messages[chat.messages.length - 1]?.content}
         </Text>

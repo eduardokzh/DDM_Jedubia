@@ -1,3 +1,4 @@
+// Balloon.js
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -45,14 +46,13 @@ const Balloon = ({ message, currentUser }) => {
   const bubbleWrapper = sent
     ? styles.bubbleWrapperSent
     : styles.bubbleWrapperReceived;
+
   return (
-    <View>
-      <View style={{ ...styles.bubbleWrapper, ...bubbleWrapper }}>
-        <View style={{ ...styles.balloon, ...balloonColor }}>
-          <Text style={{ ...styles.balloonText, ...balloonTextColor }}>
-            {message.content}
-          </Text>
-        </View>
+    <View style={{ ...styles.bubbleWrapper, ...bubbleWrapper }}>
+      <View style={{ ...styles.balloon, ...balloonColor }}>
+        <Text style={{ ...styles.balloonText, ...balloonTextColor }}>
+          {message.content}
+        </Text>
       </View>
     </View>
   );
