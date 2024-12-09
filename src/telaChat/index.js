@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import EmojiSelector from 'react-native-emoji-selector'; // Importa o seletor de emojis
 import Balloon from '../../components/balloon/';
-import { firestore, auth } from '../../firebase'; // Ajuste o caminho conforme necessário
+import { firestore, auth } from '../../firebase';
 import { doc, setDoc, updateDoc, arrayUnion, onSnapshot, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-
-const whatsImage = require('../../assets/whats.webp');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#42f563', // Cor do fundo, igual ao Login
+    backgroundColor: '#42f563',
   },
   title: {
     fontSize: 24,
@@ -27,7 +26,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   sendButton: {
-    backgroundColor: '#3fab4e', // Cor do botão semelhante ao Login
+    backgroundColor: '#3fab4e',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -40,97 +39,81 @@ const styles = StyleSheet.create({
   },
   typingIndicator: {
     fontStyle: 'italic',
-    color: 'black', // Cor do texto como branco
+    color: 'black',
     marginTop: 10,
-    width:200,
-    backgroundColor: 'white', // Cor de fundo azul
+    width: '100%',
+    backgroundColor: 'white',
     borderRadius: 10,
     fontSize: 18,
     padding: 8,
-    flexShrink: 1, // Garante que não quebre de linha
-    whiteSpace: 'nowrap', // Impede quebra de linha
+    flexShrink: 1,
   },
-  image: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
+  emojiButton: {
+    marginTop: 10,
+    alignItems: 'center',
   },
-    messageBalloon: {
-    backgroundColor: '#006400', // Verde escuro para as mensagens
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 8,
-    alignSelf: 'flex-start',
-    maxWidth: '80%', // Limita o tamanho da mensagem
-  },
-  messageText: {
-    color: 'white', // Cor do texto das mensagens
-    fontSize: 16,
+  emojiText: {
+    fontSize: 18, // Tamanho do emoji reduzido
   },
 });
 
 const Chat = ({ route }) => {
-  const { user } = route.params; // Usuário com quem estamos conversando
+  const { user } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [currentUser, setCurrentUser] = useState(null); // Para armazenar o usuário logado
-  const [isTyping, setIsTyping] = useState(false); // Para monitorar se o usuário está digitando
-  const [typingTimeout, setTypingTimeout] = useState(null); // Controle de tempo para detectar quando o usuário parou de digitar
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState(null);
+  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false); // Controle para exibir o seletor de emojis
 
-  // Monitorando o estado de autenticação do Firebase
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setCurrentUser(user); // Atualiza o usuário logado
+        setCurrentUser(user);
       } else {
-        setCurrentUser(null); // Se não estiver logado, define como null
+        setCurrentUser(null);
       }
     });
 
-    return () => unsubscribe(); // Cleanup ao desmontar o componente
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (!currentUser || !user.id) return; // Se não houver usuário logado ou o usuário da conversa
+    if (!currentUser || !user.id) return;
 
-    const chatId = [currentUser.uid, user.id].sort().join("_"); // Criando ID único para o chat
+    const chatId = [currentUser.uid, user.id].sort().join("_");
     const chatDoc = doc(firestore, 'chats', chatId);
-    
+
     const unsubscribe = onSnapshot(chatDoc, (docSnapshot) => {
       if (docSnapshot.exists()) {
         setMessages(docSnapshot.data().messages || []);
-        // Atualiza o status de digitação
         const typingUser = docSnapshot.data().typingUser;
         setIsTyping(typingUser !== currentUser.uid && typingUser !== undefined);
       }
     });
 
-    return () => unsubscribe(); // Cleanup ao desmontar o componente
+    return () => unsubscribe();
   }, [currentUser]);
 
-  // Atualiza o status de digitação no Firestore
   const handleTyping = (value) => {
     setNewMessage(value);
 
     if (value.trim() !== '') {
       if (typingTimeout) {
-        clearTimeout(typingTimeout); // Limpa o timeout anterior se o usuário continuar digitando
+        clearTimeout(typingTimeout);
       }
-
-      // Define o status de digitação no Firestore
       updateTypingStatus(true);
 
       const timeout = setTimeout(() => {
-        updateTypingStatus(false); // Se o usuário parar de digitar por 1 segundo, atualiza para false
-      }, 1000); // Espera 1 segundo após o usuário parar de digitar
+        updateTypingStatus(false);
+      }, 1000);
 
       setTypingTimeout(timeout);
     } else {
-      updateTypingStatus(false); // Se o campo estiver vazio, define como 'false'
+      updateTypingStatus(false);
     }
   };
 
-  // Atualiza o status de digitação no Firestore
   const updateTypingStatus = (typing) => {
     if (!currentUser || !user.id) return;
 
@@ -142,15 +125,14 @@ const Chat = ({ route }) => {
     });
   };
 
-  // Função para enviar mensagem
   const sendMessage = async () => {
-    if (newMessage.trim() === '') return; // Não envia mensagens vazias
+    if (newMessage.trim() === '') return;
 
     const chatId = [currentUser.uid, user.id].sort().join("_");
     const chatDoc = doc(firestore, 'chats', chatId);
 
     const newMessageObj = {
-      id: new Date().getTime().toString(), // Garante que o ID seja uma string
+      id: new Date().getTime().toString(),
       sentBy: currentUser.uid,
       content: newMessage.trim(),
       timestamp: new Date().toISOString(),
@@ -165,9 +147,8 @@ const Chat = ({ route }) => {
         await updateDoc(chatDoc, { messages: arrayUnion(newMessageObj) });
       }
 
-      // Limpa os campos após o envio
       setNewMessage('');
-      updateTypingStatus(false); // Limpa o status de digitação ao enviar a mensagem
+      updateTypingStatus(false);
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
     }
@@ -182,7 +163,6 @@ const Chat = ({ route }) => {
         ))}
       </ScrollView>
 
-      {/* Indicador de digitação */}
       {isTyping && <Text style={styles.typingIndicator}>{user.name} está digitando...</Text>}
 
       <TextInput
@@ -191,6 +171,17 @@ const Chat = ({ route }) => {
         onChangeText={handleTyping}
         placeholder="Digite uma mensagem"
       />
+
+      {/* Botão para exibir o seletor de emojis */}
+      <TouchableOpacity style={styles.emojiButton} onPress={() => setEmojiPickerVisible(!emojiPickerVisible)}>
+        <Text style={styles.emojiText}>😊</Text>
+      </TouchableOpacity>
+
+      {emojiPickerVisible && (
+        <EmojiSelector
+          onEmojiSelected={(emoji) => setNewMessage(newMessage + emoji)}
+        />
+      )}
 
       <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
         <Text style={styles.sendButtonText}>Enviar</Text>
