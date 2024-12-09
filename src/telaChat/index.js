@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
-import EmojiSelector from 'react-native-emoji-selector'; // Importa o seletor de emojis
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, View } from 'react-native';
 import Balloon from '../../components/balloon/';
 import { firestore, auth } from '../../firebase';
 import { doc, setDoc, updateDoc, arrayUnion, onSnapshot, getDoc } from 'firebase/firestore';
@@ -48,12 +47,16 @@ const styles = StyleSheet.create({
     padding: 8,
     flexShrink: 1,
   },
-  emojiButton: {
-    marginTop: 10,
-    alignItems: 'center',
+  emojiList: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
   },
-  emojiText: {
-    fontSize: 18, // Tamanho do emoji reduzido
+  emojiItem: {
+    fontSize: 24,
   },
 });
 
@@ -64,15 +67,10 @@ const Chat = ({ route }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState(null);
-  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false); // Controle para exibir o seletor de emojis
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
-      }
+      setCurrentUser(user || null);
     });
 
     return () => unsubscribe();
@@ -93,7 +91,7 @@ const Chat = ({ route }) => {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, user.id]);
 
   const handleTyping = (value) => {
     setNewMessage(value);
@@ -154,6 +152,10 @@ const Chat = ({ route }) => {
     }
   };
 
+  const addEmojiToMessage = (emoji) => {
+    setNewMessage((prev) => prev + emoji);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Chat com {user.name}</Text>
@@ -165,23 +167,20 @@ const Chat = ({ route }) => {
 
       {isTyping && <Text style={styles.typingIndicator}>{user.name} está digitando...</Text>}
 
+      <View style={styles.emojiList}>
+        {['😊', '😂', '❤️', '👍', '😢'].map((emoji) => (
+          <TouchableOpacity key={emoji} onPress={() => addEmojiToMessage(emoji)}>
+            <Text style={styles.emojiItem}>{emoji}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <TextInput
         style={styles.messageInput}
         value={newMessage}
         onChangeText={handleTyping}
         placeholder="Digite uma mensagem"
       />
-
-      {/* Botão para exibir o seletor de emojis */}
-      <TouchableOpacity style={styles.emojiButton} onPress={() => setEmojiPickerVisible(!emojiPickerVisible)}>
-        <Text style={styles.emojiText}>😊</Text>
-      </TouchableOpacity>
-
-      {emojiPickerVisible && (
-        <EmojiSelector
-          onEmojiSelected={(emoji) => setNewMessage(newMessage + emoji)}
-        />
-      )}
 
       <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
         <Text style={styles.sendButtonText}>Enviar</Text>
