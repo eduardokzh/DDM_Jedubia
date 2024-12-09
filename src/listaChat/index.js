@@ -1,35 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { firestore, auth } from '../../firebase'; // Firebase configuration
 import { collection, getDocs } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 16,
-    marginHorizontal: 16,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    marginTop: 32,
-  },
-  userItem: {
-    marginVertical: 8,
-    padding: 16,
-    backgroundColor: '#ddd',
-    borderRadius: 8,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  userEmail: {
-    fontSize: 14,
-    color: '#555',
-  },
-});
+const whatsImage = require('../../assets/whats.webp');
 
 const Chats = () => {
   const [users, setUsers] = useState([]);
@@ -89,5 +65,42 @@ const Chats = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#42f563',
+    padding: 20,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '800',
+    marginTop: 32,
+    color: 'white',
+  },
+  userItem: {
+    marginVertical: 8,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    width: '100%',
+    marginHorizontal: 20,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#555',
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
+});
 
 export default Chats;
