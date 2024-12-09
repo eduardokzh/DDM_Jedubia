@@ -1,22 +1,12 @@
-import React, { useState } from 'react'; // useState está incluído aqui
+import React, { useState } from 'react';
 import { View, TextInput, Button, Text } from 'react-native';
-import { auth } from '../../firebase'; // Importando configuração do Firebase
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../firebase'; // Importando a configuração do Firebase
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
-const Login = ({ navigation }) => { // Adicionado navigation como prop
+const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-
-  const handleRegister = async () => {
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      console.log('Usuário registrado com sucesso');
-      navigation.navigate('Chats'); // Redireciona para a página de chats
-    } catch (error) {
-      setErrorMessage(error.message);
-    }
-  };
 
   const handleLogin = async () => {
     try {
@@ -39,11 +29,14 @@ const Login = ({ navigation }) => { // Adicionado navigation como prop
         placeholder="Senha"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
+        secureTextEntry={false} // Senha visível
       />
       {errorMessage ? <Text>{errorMessage}</Text> : null}
-      <Button title="Registrar" onPress={handleRegister} />
       <Button title="Entrar" onPress={handleLogin} />
+      <Button 
+        title="Criar Conta" 
+        onPress={() => navigation.navigate('Cadastro')}  // Navega para a tela de cadastro
+      />
     </View>
   );
 };

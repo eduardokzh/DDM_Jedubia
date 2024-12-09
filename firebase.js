@@ -1,8 +1,10 @@
-import { FirebaseApp, initializeApp } from 'firebase/app';
+// Importando o SDK do Firebase
+import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
 
-// Configuração do Firebase (obtida do Firebase Console)
+// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCH66cFSKPBoGlb3HFj6ioDlQLAFEE1bro",
   authDomain: "chat-firebase-b03e7.firebaseapp.com",
@@ -16,7 +18,11 @@ const firebaseConfig = {
 
 // Inicializando o Firebase
 const app = initializeApp(firebaseConfig);
+
+// Inicializando os serviços necessários
 const auth = getAuth(app);
+const firestore = getFirestore(app);
 const database = getDatabase(app);
 
-export { auth, database };
+// Exportando as referências
+export { auth, firestore, database };
