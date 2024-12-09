@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, Image } from 'react-native';
 import { auth, firestore } from '../../firebase'; // Importando a configuração do Firebase
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+
+const whatsImage = require('../../assets/whats.webp');
 
 const Cadastro = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -33,27 +35,72 @@ const Cadastro = ({ navigation }) => {
   };
 
   return (
-    <View>  
+    <View style={styles.container}>
+      <Image source={whatsImage} style={styles.image} />
+      <Text style={{color: 'white', fontSize: 40, fontWeight: 'bold'}}>WhatsApp</Text>
       <TextInput 
         placeholder="Nome"
         value={name}
         onChangeText={setName}
+        style={styles.input}
       />
       <TextInput 
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
+        style={styles.input}
       />
       <TextInput
         placeholder="Senha"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry={false} // Senha visível
+        secureTextEntry={true} // Senha oculta
+        style={styles.input}
       />
-      {errorMessage ? <Text>{errorMessage}</Text> : null}
-      <Button title="Registrar" onPress={handleRegister} />
+      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+      <View style={styles.buttonContainer}>
+        <Button title="Registrar" onPress={handleRegister} color="#3fab4e" />
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Já tem uma conta? Entrar"
+          onPress={() => navigation.navigate('Login')}
+          color="#3fab4e"
+        />
+      </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#42f563',
+    padding: 20,
+  },
+  input: {
+    width: '100%',
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  image: {
+    width: 100,
+    height: 100,
+  },
+  error: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    width: '100%',
+    marginVertical: 5,
+  },
+});
 
 export default Cadastro;

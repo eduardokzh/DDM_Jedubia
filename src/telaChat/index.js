@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
 import Balloon from '../../components/balloon/';
 import { firestore, auth } from '../../firebase'; // Ajuste o caminho conforme necessário
 import { doc, setDoc, updateDoc, arrayUnion, onSnapshot, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
+const whatsImage = require('../../assets/whats.webp');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#42f563', // Cor do fundo, igual ao Login
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
+    color: 'white',
   },
   messageInput: {
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginTop: 16,
+    backgroundColor: '#fff',
   },
   sendButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#3fab4e', // Cor do botão semelhante ao Login
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -36,8 +40,32 @@ const styles = StyleSheet.create({
   },
   typingIndicator: {
     fontStyle: 'italic',
-    color: 'gray',
+    color: 'black', // Cor do texto como branco
     marginTop: 10,
+    width:200,
+    backgroundColor: 'white', // Cor de fundo azul
+    borderRadius: 10,
+    fontSize: 18,
+    padding: 8,
+    flexShrink: 1, // Garante que não quebre de linha
+    whiteSpace: 'nowrap', // Impede quebra de linha
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
+    messageBalloon: {
+    backgroundColor: '#006400', // Verde escuro para as mensagens
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+    maxWidth: '80%', // Limita o tamanho da mensagem
+  },
+  messageText: {
+    color: 'white', // Cor do texto das mensagens
+    fontSize: 16,
   },
 });
 

@@ -6,7 +6,9 @@ const Balloon = ({ message, currentUser }) => {
 
   return (
     <View style={[styles.bubble, isCurrentUser ? styles.currentUser : styles.otherUser]}>
-      <Text>{message.content}</Text>
+      <Text style={isCurrentUser ? styles.currentUserText : styles.otherUserText}>
+        {message.content}
+      </Text>
       {message.image && <Image source={{ uri: message.image }} style={styles.image} />}
     </View>
   );
@@ -20,12 +22,20 @@ const styles = StyleSheet.create({
     maxWidth: '80%',
   },
   currentUser: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#21612a', // Verde escuro para o usuário atual
     alignSelf: 'flex-end',
   },
   otherUser: {
-    backgroundColor: '#e5e5ea',
+    backgroundColor: '#e5e5ea', // Cor padrão para outros usuários
     alignSelf: 'flex-start',
+  },
+  currentUserText: {
+    color: 'white', // Texto branco para as mensagens enviadas
+    fontSize: 15, // Aumentando o tamanho da fonte para 15
+  },
+  otherUserText: {
+    color: 'black', // Texto preto para as mensagens de outros usuários
+    fontSize: 15, // Aumentando o tamanho da fonte para 15
   },
   image: {
     width: 100,
@@ -34,5 +44,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 });
+
 
 export default Balloon;
