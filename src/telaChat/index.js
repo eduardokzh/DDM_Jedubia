@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#42f563', // Cor do fundo, igual ao Login
   },
   title: {
-    fontSize: 15, // Ajuste o tamanho da fonte para 15
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
     color: 'white',
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     height: 100,
     marginBottom: 20,
   },
-  messageBalloon: {
+    messageBalloon: {
     backgroundColor: '#006400', // Verde escuro para as mensagens
     borderRadius: 10,
     padding: 12,
@@ -64,11 +64,10 @@ const styles = StyleSheet.create({
     maxWidth: '80%', // Limita o tamanho da mensagem
   },
   messageText: {
-    color: 'white', // Cor do texto das mensagens (branco)
+    color: 'white', // Cor do texto das mensagens
     fontSize: 16,
   },
 });
-
 
 const Chat = ({ route }) => {
   const { user } = route.params; // Usuário com quem estamos conversando
