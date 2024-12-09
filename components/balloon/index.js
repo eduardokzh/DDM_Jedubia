@@ -1,61 +1,38 @@
-// Balloon.js
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-
-const styles = StyleSheet.create({
-  bubbleWrapper: {
-    flexDirection: 'column',
-  },
-  bubbleWrapperSent: {
-    alignSelf: 'flex-end',
-    marginLeft: 40,
-  },
-  bubbleWrapperReceived: {
-    alignSelf: 'flex-start',
-    marginRight: 40,
-  },
-  balloon: {
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  balloonSent: {
-    backgroundColor: Colors.white,
-  },
-  balloonReceived: {
-    backgroundColor: Colors.primary,
-  },
-  balloonText: {
-    fontSize: 18,
-  },
-  balloonTextSent: {
-    color: Colors.black,
-  },
-  balloonTextReceived: {
-    color: Colors.white,
-  },
-});
+import { View, Text, Image, StyleSheet } from 'react-native';
 
 const Balloon = ({ message, currentUser }) => {
-  const sent = currentUser === message.sentBy;
-  const balloonColor = sent ? styles.balloonSent : styles.balloonReceived;
-  const balloonTextColor = sent
-    ? styles.balloonTextSent
-    : styles.balloonTextReceived;
-  const bubbleWrapper = sent
-    ? styles.bubbleWrapperSent
-    : styles.bubbleWrapperReceived;
+  const isCurrentUser = message.sentBy === currentUser;
 
   return (
-    <View style={{ ...styles.bubbleWrapper, ...bubbleWrapper }}>
-      <View style={{ ...styles.balloon, ...balloonColor }}>
-        <Text style={{ ...styles.balloonText, ...balloonTextColor }}>
-          {message.content}
-        </Text>
-      </View>
+    <View style={[styles.bubble, isCurrentUser ? styles.currentUser : styles.otherUser]}>
+      <Text>{message.content}</Text>
+      {message.image && <Image source={{ uri: message.image }} style={styles.image} />}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  bubble: {
+    padding: 10,
+    borderRadius: 10,
+    marginVertical: 5,
+    maxWidth: '80%',
+  },
+  currentUser: {
+    backgroundColor: '#007bff',
+    alignSelf: 'flex-end',
+  },
+  otherUser: {
+    backgroundColor: '#e5e5ea',
+    alignSelf: 'flex-start',
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    marginTop: 5,
+  },
+});
 
 export default Balloon;

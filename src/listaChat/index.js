@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { firestore } from '../../firebase'; // Firebase configuration
+import { firestore, auth } from '../../firebase'; // Firebase configuration
 import { collection, getDocs } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
-
-const currentUser = "EXHVS5u50ShTWQhnYAymprkJrxr2"; // Substitua pelo UID real do usuário logado
+import { onAuthStateChanged } from 'firebase/auth';
 
 const styles = StyleSheet.create({
   container: {
@@ -34,15 +33,31 @@ const styles = StyleSheet.create({
 
 const Chats = () => {
   const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);  // Para armazenar o usuário logado
   const navigation = useNavigation();
+
+  // Monitorando o estado de autenticação do Firebase
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);  // Atualiza o usuário logado
+      } else {
+        setCurrentUser(null);  // Se não estiver logado, define como null
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup ao desmontar o componente
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
+      if (!currentUser) return;  // Se não houver usuário logado, não faz nada
+
       try {
         const querySnapshot = await getDocs(collection(firestore, 'users'));
         const usersData = querySnapshot.docs
           .map(doc => ({ ...doc.data(), id: doc.id }))
-          .filter(user => user.id !== currentUser); // Filtrando o usuário logado
+          .filter(user => user.id !== currentUser.uid); // Filtrando o próprio usuário logado
 
         setUsers(usersData);
       } catch (error) {
@@ -51,7 +66,7 @@ const Chats = () => {
     };
 
     fetchUsers();
-  }, []);
+  }, [currentUser]);
 
   const startChat = (user) => {
     // Navegar para a tela de chat com o usuário selecionado

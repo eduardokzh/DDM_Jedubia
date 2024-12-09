@@ -1,110 +1,166 @@
-//telaChat
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { firestore } from '../../firebase'; // Firebase configuration
-import { doc, setDoc,updateDoc, arrayUnion, onSnapshot , getDoc} from 'firebase/firestore';
-import Balloon from '../../components/balloon';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import Balloon from '../../components/balloon/';
+import { firestore, auth } from '../../firebase'; // Ajuste o caminho conforme necessário
+import { doc, setDoc, updateDoc, arrayUnion, onSnapshot, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 16,
-    marginHorizontal: 16,
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#fff',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '800',
-    marginTop: 32,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
   messageInput: {
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginTop: 16,
-    marginBottom: 16,
   },
   sendButton: {
     backgroundColor: '#007bff',
-    color: 'white',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 16,
   },
   sendButtonText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 16,
+  },
+  typingIndicator: {
+    fontStyle: 'italic',
+    color: 'gray',
+    marginTop: 10,
   },
 });
 
-const currentUser = "lUYqOGX99PekkYQwYNFCRJdHLlF3";  // Usuário logado
-
 const Chat = ({ route }) => {
-  const { user } = route.params;  // Usuário com quem estamos conversando
+  const { user } = route.params; // Usuário com quem estamos conversando
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [currentUser, setCurrentUser] = useState(null); // Para armazenar o usuário logado
+  const [isTyping, setIsTyping] = useState(false); // Para monitorar se o usuário está digitando
+  const [typingTimeout, setTypingTimeout] = useState(null); // Controle de tempo para detectar quando o usuário parou de digitar
 
-  // Escutando as mensagens em tempo real
+  // Monitorando o estado de autenticação do Firebase
   useEffect(() => {
-    const chatId = [currentUser, user.id].sort().join("_");  // Criando ID único para o chat
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user); // Atualiza o usuário logado
+      } else {
+        setCurrentUser(null); // Se não estiver logado, define como null
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup ao desmontar o componente
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser || !user.id) return; // Se não houver usuário logado ou o usuário da conversa
+
+    const chatId = [currentUser.uid, user.id].sort().join("_"); // Criando ID único para o chat
     const chatDoc = doc(firestore, 'chats', chatId);
     
     const unsubscribe = onSnapshot(chatDoc, (docSnapshot) => {
       if (docSnapshot.exists()) {
         setMessages(docSnapshot.data().messages || []);
+        // Atualiza o status de digitação
+        const typingUser = docSnapshot.data().typingUser;
+        setIsTyping(typingUser !== currentUser.uid && typingUser !== undefined);
       }
     });
 
-    // Cleanup ao desmontar o componente
-    return () => unsubscribe();
-  }, [user.id]);
+    return () => unsubscribe(); // Cleanup ao desmontar o componente
+  }, [currentUser]);
 
-  // Enviar uma nova mensagem
-  
-const sendMessage = async () => {
-  if (newMessage.trim() === '') return;  // Não envia mensagens vazias
+  // Atualiza o status de digitação no Firestore
+  const handleTyping = (value) => {
+    setNewMessage(value);
 
-  const chatId = [currentUser, user.id].sort().join("_"); // Criando ID único para o chat
-  const chatDoc = doc(firestore, 'chats', chatId);
+    if (value.trim() !== '') {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout); // Limpa o timeout anterior se o usuário continuar digitando
+      }
 
-  const newMessageObj = {
-    id: new Date().getTime(),  // Gerando um ID único para cada mensagem
-    sentBy: currentUser,  // ID do usuário que enviou a mensagem
-    content: newMessage.trim(),  // Conteúdo da mensagem
+      // Define o status de digitação no Firestore
+      updateTypingStatus(true);
+
+      const timeout = setTimeout(() => {
+        updateTypingStatus(false); // Se o usuário parar de digitar por 1 segundo, atualiza para false
+      }, 1000); // Espera 1 segundo após o usuário parar de digitar
+
+      setTypingTimeout(timeout);
+    } else {
+      updateTypingStatus(false); // Se o campo estiver vazio, define como 'false'
+    }
   };
 
-  try {
-    // Verificando se o documento do chat existe
-    const chatSnapshot = await getDoc(chatDoc);
-    
-    if (!chatSnapshot.exists()) {
-      // Se o documento não existe, cria um novo chat com a primeira mensagem
-      await setDoc(chatDoc, {
-        messages: [newMessageObj], // Cria o chat com a primeira mensagem
-      });
-    } else {
-      // Se o chat já existe, apenas adiciona a nova mensagem
-      await updateDoc(chatDoc, {
-        messages: arrayUnion(newMessageObj),  // Adiciona a nova mensagem ao array de mensagens
-      });
-    }
+  // Atualiza o status de digitação no Firestore
+  const updateTypingStatus = (typing) => {
+    if (!currentUser || !user.id) return;
 
-    setNewMessage('');  // Limpa o campo de mensagem após enviar
-  } catch (error) {
-    console.error('Erro ao enviar mensagem: ', error);
-  }
-};
+    const chatId = [currentUser.uid, user.id].sort().join("_");
+    const chatDoc = doc(firestore, 'chats', chatId);
+
+    updateDoc(chatDoc, {
+      typingUser: typing ? currentUser.uid : null,
+    });
+  };
+
+  // Função para enviar mensagem
+  const sendMessage = async () => {
+    if (newMessage.trim() === '') return; // Não envia mensagens vazias
+
+    const chatId = [currentUser.uid, user.id].sort().join("_");
+    const chatDoc = doc(firestore, 'chats', chatId);
+
+    const newMessageObj = {
+      id: new Date().getTime().toString(), // Garante que o ID seja uma string
+      sentBy: currentUser.uid,
+      content: newMessage.trim(),
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      const chatSnapshot = await getDoc(chatDoc);
+
+      if (!chatSnapshot.exists()) {
+        await setDoc(chatDoc, { users: [currentUser.uid, user.id], messages: [newMessageObj] });
+      } else {
+        await updateDoc(chatDoc, { messages: arrayUnion(newMessageObj) });
+      }
+
+      // Limpa os campos após o envio
+      setNewMessage('');
+      updateTypingStatus(false); // Limpa o status de digitação ao enviar a mensagem
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Chat com {user.name}</Text>
-      {messages.map(message => (
-        <Balloon key={message.id} message={message} currentUser={currentUser} />
-      ))}
+      <ScrollView>
+        {messages.map((message) => (
+          <Balloon key={message.id} message={message} currentUser={currentUser?.uid} />
+        ))}
+      </ScrollView>
+
+      {/* Indicador de digitação */}
+      {isTyping && <Text style={styles.typingIndicator}>{user.name} está digitando...</Text>}
 
       <TextInput
         style={styles.messageInput}
         value={newMessage}
-        onChangeText={setNewMessage}
+        onChangeText={handleTyping}
         placeholder="Digite uma mensagem"
       />
 
