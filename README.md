@@ -28,5 +28,20 @@ https://expo.dev/accounts/rixzz/projects/chatjacao/builds/2efc5805-952e-42b0-856
 5. Abre um celular no Android e estudio e no terminal escreva
    ```bash
     expo start -c
-    
+   
+## Execução
 
+Para executar o aplicativo, siga os passos abaixo:
+
+1. **Inicie o servidor Expo:**
+   ```bash
+   npx expo start
+   ```
+   ou
+   ```bash
+   npm start
+   ```
+
+2. **Abra o aplicativo no seu dispositivo:**
+   - Utilize o aplicativo **Expo Go** disponível na Google Play Store ou na Apple App Store.
+   - Escaneie o QR code exibido no terminal ou na interface web do Expo.
