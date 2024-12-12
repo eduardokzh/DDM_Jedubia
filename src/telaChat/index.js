@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, View } from 'react-native';
-import Balloon from '../../components/balloon/';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, View, KeyboardAvoidingView, Platform } from 'react-native';
+import Balloon from '../../components/balloon/'; // Componente para mostrar as mensagens
 import { firestore, auth } from '../../firebase';
 import { doc, setDoc, updateDoc, arrayUnion, onSnapshot, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -8,55 +8,74 @@ import { onAuthStateChanged } from 'firebase/auth';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#42f563',
+    backgroundColor: '#F0F0F0',  // Cor de fundo mais suave
+    paddingTop: 20,
+    justifyContent: 'flex-start',
   },
-  title: {
-    fontSize: 24,
+  header: {
+    backgroundColor: '#4CAF50', // Cor do header
+    padding: 15,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerText: {
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
     color: 'white',
   },
+  messagesContainer: {
+    flex: 1,
+    paddingHorizontal: 15,
+    paddingBottom: 15,
+  },
+  messageInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#FFF',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    justifyContent: 'space-between',
+  },
   messageInput: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
-    backgroundColor: '#fff',
+    flex: 1,
+    height: 45,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+    paddingLeft: 15,
+    paddingRight: 15,
+    fontSize: 16,
   },
   sendButton: {
-    backgroundColor: '#3fab4e',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
+    marginLeft: 10,
+    backgroundColor: '#4CAF50',
+    borderRadius: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
   sendButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: 'white',
+    fontWeight: 'bold',
   },
   typingIndicator: {
     fontStyle: 'italic',
-    color: 'black',
-    marginTop: 10,
-    width: '100%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    fontSize: 18,
-    padding: 8,
-    flexShrink: 1,
+    color: '#777',
+    textAlign: 'center',
+    padding: 5,
+    marginBottom: 10,
   },
-  emojiList: {
+  emojiRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 15,
   },
-  emojiItem: {
-    fontSize: 24,
+  emoji: {
+    fontSize: 28,
+    marginHorizontal: 10,
   },
 });
 
@@ -158,33 +177,40 @@ const Chat = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Chat com {user.name}</Text>
-      <ScrollView>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>{user.name}</Text>
+      </View>
+
+      {/* Messages */}
+      <ScrollView style={styles.messagesContainer}>
         {messages.map((message) => (
           <Balloon key={message.id} message={message} currentUser={currentUser?.uid} />
         ))}
+        {isTyping && <Text style={styles.typingIndicator}>{user.name} está digitando...</Text>}
       </ScrollView>
 
-      {isTyping && <Text style={styles.typingIndicator}>{user.name} está digitando...</Text>}
-
-      <View style={styles.emojiList}>
+      {/* Emoji Row */}
+      <View style={styles.emojiRow}>
         {['😊', '😂', '❤️', '👍', '😢'].map((emoji) => (
           <TouchableOpacity key={emoji} onPress={() => addEmojiToMessage(emoji)}>
-            <Text style={styles.emojiItem}>{emoji}</Text>
+            <Text style={styles.emoji}>{emoji}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <TextInput
-        style={styles.messageInput}
-        value={newMessage}
-        onChangeText={handleTyping}
-        placeholder="Digite uma mensagem"
-      />
-
-      <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-        <Text style={styles.sendButtonText}>Enviar</Text>
-      </TouchableOpacity>
+      {/* Message Input */}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.messageInputContainer}>
+        <TextInput
+          style={styles.messageInput}
+          value={newMessage}
+          onChangeText={handleTyping}
+          placeholder="Digite uma mensagem"
+        />
+        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+          <Text style={styles.sendButtonText}>Enviar</Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

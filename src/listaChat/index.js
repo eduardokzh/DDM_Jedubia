@@ -52,16 +52,26 @@ const Chats = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Usuários</Text>
-      {users.map(user => (
-        <TouchableOpacity
-          key={user.id}
-          style={styles.userItem}
-          onPress={() => startChat(user)}
-        >
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
-        </TouchableOpacity>
-      ))}
+      
+      {users.length === 0 ? (
+        <Text style={styles.noUsersText}>Nenhum usuário encontrado</Text>
+      ) : (
+        users.map(user => (
+          <TouchableOpacity
+            key={user.id}
+            style={styles.userItem}
+            onPress={() => startChat(user)}
+          >
+            <View style={styles.userInfo}>
+              <Image source={whatsImage} style={styles.userImage} />
+              <View>
+                <Text style={styles.userName}>{user.name}</Text>
+                <Text style={styles.userEmail}>{user.email}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))
+      )}
     </SafeAreaView>
   );
 };
@@ -69,37 +79,48 @@ const Chats = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    backgroundColor: '#42f563',
+    backgroundColor: '#F4F4F9',  // Cor suave de fundo
     padding: 20,
   },
   title: {
     fontSize: 32,
-    fontWeight: '800',
-    marginTop: 32,
-    color: 'white',
+    fontWeight: '700',
+    marginBottom: 20,
+    color: '#333',  // Contraste maior para o título
   },
   userItem: {
     marginVertical: 8,
     padding: 16,
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     width: '100%',
-    marginHorizontal: 20,
+    elevation: 4,  // Sombra para destacar cada item
+    marginBottom: 10,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
   },
   userName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#333',
   },
   userEmail: {
     fontSize: 14,
-    color: '#555',
+    color: '#777',
   },
-  image: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
+  noUsersText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#777',
+    marginTop: 20,
   },
 });
 
